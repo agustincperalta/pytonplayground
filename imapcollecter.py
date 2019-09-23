@@ -1,14 +1,14 @@
- 
-import imapclient, pyzmail
+import imapclient, pyzmail, getpass
 from bs4 import BeautifulSoup
 
 messages = []
-filename = 'Problemas.docx'
-CUENTA = input("introduce tu correo de gmail")
-PASSWORD = input("introduce tu password")
+filename = 'Problemas.txt'
+CUENTA = input("introduce tu correo de gmail\n")
+PASSWORD = getpass.getpass("introduce tu password\n")
 o = imapclient.IMAPClient('imap.gmail.com', ssl=True)
 o.login(CUENTA, PASSWORD)
 o.select_folder('INBOX', readonly=True)
+print("procesando...")
 # Buscar solo los mensajes que contienen problemas DONE
 cadena = 'Daily Coding Problem: Problem #'
 UIDS = o.search(['FROM', 'founders@dailycodingproblem.com', 'SUBJECT', cadena])
@@ -27,8 +27,12 @@ with open(filename, 'w') as file:
         #TODO Hacer que solo imprima el texto donde se encuentra el problema
         codigo = i.html_part.get_payload().decode('UTF-8')
         sopa = BeautifulSoup(codigo, 'html.parser')
-        parrafos = sopa.find_all('p')
+        raw_parrafos = sopa.find_all('p')
+        parrafos = raw_parrafos[1:-5]
         for p in parrafos:
             file.write(p.text.strip() +'\n')
         file.write('\n\n')
 o.logout()
+print("Listo!. Tu archivo está listo en " + filename)
+
+
